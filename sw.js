@@ -1,12 +1,12 @@
 const CACHE_NAME = 'pension-app-v1';
 const urlsToCache = [
-  '/',                 // 关键：根路径
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/db.js',
-  '/js/xlsx.full.min.js',  // 如果你已把 xlsx 放本地 js 目录
-  '/manifest.json'
+  '/pension-mobile/',                 // 关键：根路径
+  '/pension-mobile/index.html',
+  '/pension-mobile/styles.css',
+  '/pension-mobile/app.js',
+  '/pension-mobile/db.js',
+  '/pension-mobile/js/xlsx.full.min.js',  // 如果你已把 xlsx 放本地 js 目录
+  '/pension-mobile/manifest.json'
 ];
 
 // 安装时缓存静态资源
@@ -61,4 +61,5 @@ self.addEventListener('fetch', event => {
     );
   }
 });
+
 
