@@ -1,0 +1,215 @@
+<!DOCTYPE html> <!-- 声明文档类型为HTML5 -->
+<html lang="zh-CN"> <!-- 设置HTML语言为中文简体 -->
+<head>
+    <!-- 定义文档头部，包含元数据和资源引用 -->
+    <meta charset="UTF-8"> <!-- 设置字符编码为UTF-8，支持中文显示 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 设置视口，确保移动端响应式布局 -->
+    <title>企业年金分析平台</title> <!-- 设置页面标题，显示在浏览器标签页上 -->
+    
+    <!-- 引入外部CSS样式文件 -->
+    <base href="./">  <!-- ✅ 添加这一行，所有相对路径以此为基准 -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4a90e2">
+
+    <script src="js/db.js"></script>
+
+    <script type="module">
+    // ✅ ES6模块导入
+    import { BudgetDB } from './js/db.js';
+    import { analyzeData } from './js/analytics.js';
+    
+    // ✅ 页面加载时初始化
+    window.addEventListener('DOMContentLoaded', async () => {
+        const db = new BudgetDB();
+        await db.init();
+        loadData(db);
+    });
+    </script>
+    
+    <!-- 引入Chart.js图表库，用于绘制各类图表 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入Chart.js缩放插件，支持图表缩放和平移功能 -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <!-- 引入SheetJS库，用于Excel文件的导入导出操作 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- 页面主体容器 -->
+    <div class="container">
+	<div id="uploadSection" style="display:none; text-align:center; padding:40px;">
+  		<h3>📁 首次使用请上传数据文件</h3>
+  		<p>请选择 <code>pension_data.json</code></p>
+  		<input type="file" id="fileInput" accept=".json" />
+  		<br /><br />
+  		<button class="export-btn" onclick="handleFileUpload()">加载数据</button>
+	</div>
+        <!-- 页面头部标题区域 -->
+        <div class="header">
+            企业年金分析平台 <!-- 显示平台名称 -->
+        </div>
+        
+        <!-- 加载提示区域，数据加载完成前显示 -->
+        <div class="loading" id="loading">正在加载数据...</div>
+        
+        <!-- 主要内容区域，初始隐藏，数据加载完成后显示 -->
+        <div id="content" style="display:none;">
+            <!-- 控制面板区域，包含各种筛选和分析选项 -->
+            <div class="control-panel">
+                <!-- 期初时间选择控件组 -->
+                <div class="control-group">
+                    <label class="control-label">期初时间</label> <!-- 标签文本 -->
+                    <select class="control-select" id="startDateSelect"></select> <!-- 下拉选择框 -->
+                </div>
+                
+                <!-- 期末时间选择控件组 -->
+                <div class="control-group">
+                    <label class="control-label">期末时间</label> <!-- 标签文本 -->
+                    <select class="control-select" id="endDateSelect"></select> <!-- 下拉选择框 -->
+                </div>
+                
+                <!-- 数据类型选择控件组 -->
+                <div class="control-group">
+                    <label class="control-label">数据类型</label> <!-- 标签文本 -->
+                    <select class="control-select" id="dataTypeSelect"> <!-- 数据类型下拉菜单 -->
+                        <option value="scale">组合数</option> <!-- 组合数选项 -->
+                        <option value="asset">资产规模(亿)</option> <!-- 资产规模选项 -->
+                        <option value="return">收益率(%)</option> <!-- 收益率选项 -->
+                    </select>
+                </div>
+                
+                <!-- 资产类别选择控件组，仅在收益率模式下显示 -->
+                <div class="control-group" id="categoryGroup" style="display:none;">
+                    <label class="control-label">资产类别</label> <!-- 标签文本 -->
+                    <select class="control-select" id="categorySelect"> <!-- 资产类别下拉菜单 -->
+                        <option value="fixed">固定收益类</option> <!-- 固定收益类选项 -->
+                        <option value="equity">含权益类</option> <!-- 含权益类选项 -->
+                    </select>
+                </div>
+                
+                <!-- 管理人选择控件组，使用自定义多选下拉框 -->
+                <div class="control-group">
+                    <label class="control-label">选择管理人</label> <!-- 标签文本 -->
+                    <!-- 自定义下拉容器 -->
+                    <div class="custom-dropdown" id="managerDropdown">
+                        <!-- 显示已选择的管理人 -->
+                        <div class="dropdown-display" id="managerDisplay">
+                            <span style="color: #8e8e93;">点击选择管理人...</span> <!-- 默认提示文字 -->
+                        </div>
+                        <!-- 下拉选项容器 -->
+                        <div class="dropdown-options" id="managerOptions">
+                            <!-- 搜索框 -->
+                            <input type="text" class="dropdown-search" id="managerSearch" placeholder="搜索管理人...">
+                            <!-- 管理人列表容器 -->
+                            <div id="managerItems"></div>
+                        </div>
+                    </div>
+                    <!-- 全选和全不选按钮组 -->
+                    <div class="btn-group" style="margin-top: 10px;">
+                        <button class="btn-small" onclick="selectAllManagers()">全选</button> <!-- 全选按钮 -->
+                        <button class="btn-small" onclick="clearAllManagers()">全不选</button> <!-- 全不选按钮 -->
+                    </div>
+                </div>
+                
+                <!-- 分析模式选择控件组 -->
+                <div class="control-group">
+                    <label class="control-label">分析模式</label> <!-- 标签文本 -->
+                    <select class="control-select" id="compareModeSelect"> <!-- 分析模式下拉菜单 -->
+                        <option value="single">截面分析</option> <!-- 单期分析选项 -->
+                        <option value="compare">趋势分析</option> <!-- 多期趋势分析选项 -->
+                    </select>
+                </div>
+                
+                <!-- 明细数据显示复选框控件组 -->
+                <div class="control-group">
+                    <label class="control-checkbox">
+                        <input type="checkbox" id="showDetailCheckbox"> <!-- 复选框 -->
+                        <span>显示明细数据</span> <!-- 复选框标签文本 -->
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 统计表格容器 -->
+            <div class="stats-table-container">
+                <!-- 统计表格 -->
+                <table class="stats-table" id="statsTable">
+                    <thead id="statsTableHead">
+                        <!-- 动态生成的表头 -->
+                    </thead>
+                    <tbody id="statsTableBody"></tbody> <!-- 表体，动态填充数据 -->
+                </table>
+            </div>
+            
+            <!-- 主图表容器 -->
+            <div class="chart-container">
+                <canvas id="mainChart"></canvas> <!-- Canvas元素用于绘制图表 -->
+            </div>
+            
+            <!-- 散点图容器，用于收益率与最大回撤分析 -->
+            <div class="scatter-chart-container" id="scatterChartContainer">
+                <canvas id="scatterChart"></canvas> <!-- Canvas元素用于绘制散点图 -->
+            </div>
+            
+            <!-- 明细数据表格容器，默认隐藏 -->
+            <div class="detail-table-container" id="detailTableContainer">
+                <!-- 明细数据表格 -->
+                <table class="detail-table" id="detailTable">
+                    <thead id="detailTableHead">
+                        <!-- 动态生成的表头 -->
+                    </thead>
+                    <tbody id="detailTableBody"></tbody> <!-- 表体，动态填充明细数据 -->
+                </table>
+            </div>
+            
+            <!-- 导出功能按钮区域 -->
+	   <!-- ⑥ 重新上传按钮 -->
+	   <div class="control-group" style="margin: 0 24px 12px;">
+ 		 <label class="control-label">数据管理</label>
+  		<button class="btn-small" onclick="reuploadData()">重新上传数据</button>
+	    </div>
+
+            <div class="export-panel">
+                <button class="export-btn export-chart" onclick="exportChart()">导出图表</button> <!-- 导出图表按钮 -->
+                <button class="export-btn export-excel" onclick="exportExcel()">导出Excel</button> <!-- 导出Excel按钮 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入外部JavaScript文件 -->
+    <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+            navigator.serviceWorker.register('sw.js')
+                .then(registration => {
+                console.log('Service Worker 注册成功:', registration);
+          
+                // 监听更新事件
+                registration.addEventListener('updatefound', () => {
+                    console.log('发现新版本');
+                });
+                })
+                .catch(error => {
+                console.log('Service Worker 注册失败:', error);
+                });
+            });
+        }
+
+        // 主动检查更新 - 关键代码
+        function checkForUpdates() {
+            if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(registration => {
+                if (registration) {
+                registration.update(); // 检查Service Worker更新
+                }
+            });
+            }
+        }
+
+        // 页面加载时检查更新，之后每30分钟检查一次
+        checkForUpdates();
+        setInterval(checkForUpdates, 30 * 60 * 1000);
+    </script>
+</body>
+</html>
+
