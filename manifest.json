@@ -1,7 +1,8 @@
 {
   "name": "养老金查询系统",
   "short_name": "养老金",
-  "start_url": "./",
+  "start_url": "/pension-mobile/",
+  "scope": "/pension-mobile/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4a90e2",
@@ -18,4 +19,5 @@
     }
   ]
 }
+
 
