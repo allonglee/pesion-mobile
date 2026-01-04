@@ -80,24 +80,26 @@ function transformJSON(jsonData) {
  */
 // app.js  ——  全新 loadData 函数
 async function loadData() {
-  const db = new LocalDB();
-  await db.init();
-
   const loadingEl = document.getElementById('loading');
   const contentEl = document.getElementById('content');
   const uploadEl  = document.getElementById('uploadSection');
 
-  // 1. 先尝试 IndexedDB
-  const cached = await db.get();
-  if (cached) {
-    rawData = transformJSON(cached);
-    loadingEl.style.display = 'none';
-    contentEl.style.display = 'block';
-    initializeApp();
-    return;
+  try {
+    const db = new LocalDB();
+    await db.init();
+    const cached = await db.get();
+    if (cached) {
+      rawData = transformJSON(cached);
+      loadingEl.style.display = 'none';
+      contentEl.style.display = 'block';
+      initializeApp();
+      return;
+    }
+  } catch (e) {
+    console.warn('IndexedDB 读取失败:', e);
   }
 
-  // 2. 没有缓存 → 显示上传界面
+  // 无论 IndexedDB 有无数据，只要走到这里就显示上传界面
   loadingEl.style.display = 'none';
   uploadEl.style.display  = 'block';
 }
@@ -1656,5 +1658,6 @@ async function handleFileUpload() {
     alert('JSON 解析失败：' + e.message);
   }
 }
+
 
 
