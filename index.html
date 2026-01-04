@@ -168,7 +168,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-            navigator.serviceWorker.register('sw.js')
+            navigator.serviceWorker.register('/pension-mobile/sw.js')
                 .then(registration => {
                 console.log('Service Worker 注册成功:', registration);
           
@@ -200,6 +200,7 @@
     </script>
 </body>
 </html>
+
 
 
 
