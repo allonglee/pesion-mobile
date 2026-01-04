@@ -1,10 +1,12 @@
 const CACHE_NAME = 'pension-app-v1';
 const urlsToCache = [
-  '/',
+  '/',                 // 关键：根路径
   '/index.html',
   '/styles.css',
-  '/js/app.js'
-  // 注意：不缓存 pension_data.json
+  '/app.js',
+  '/db.js',
+  '/js/xlsx.full.min.js',  // 如果你已把 xlsx 放本地 js 目录
+  '/manifest.json'
 ];
 
 // 安装时缓存静态资源
@@ -18,15 +20,13 @@ self.addEventListener('install', event => {
 // 激活时清理旧缓存
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys().then(cacheNames =>
+      Promise.all(
+        cacheNames.map(cacheName =>
+          cacheName !== CACHE_NAME ? caches.delete(cacheName) : null
+        )
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
@@ -61,3 +61,4 @@ self.addEventListener('fetch', event => {
     );
   }
 });
+
