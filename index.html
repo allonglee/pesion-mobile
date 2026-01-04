@@ -14,19 +14,6 @@
 
     <script src="db.js"></script>
 
-    <script type="module">
-    // ✅ ES6模块导入
-    import { BudgetDB } from './js/db.js';
-    import { analyzeData } from './js/analytics.js';
-    
-    // ✅ 页面加载时初始化
-    window.addEventListener('DOMContentLoaded', async () => {
-        const db = new BudgetDB();
-        await db.init();
-        loadData(db);
-    });
-    </script>
-    
     <!-- 引入Chart.js图表库，用于绘制各类图表 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- 引入Chart.js缩放插件，支持图表缩放和平移功能 -->
@@ -213,6 +200,7 @@
     </script>
 </body>
 </html>
+
 
 
 
