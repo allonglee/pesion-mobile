@@ -1,3 +1,4 @@
+console.log('★ app.js 已加载');
 // 全局变量声明区域
 let rawData = []; // 存储从CSV加载的原始数据数组
 let managers = []; // 存储所有不重复的管理人名称数组
@@ -80,6 +81,7 @@ function transformJSON(jsonData) {
  */
 // app.js  ——  全新 loadData 函数
 async function loadData() {
+  console.log('loadData 被调用');
   const loadingEl = document.getElementById('loading');
   const contentEl = document.getElementById('content');
   const uploadEl  = document.getElementById('uploadSection');
@@ -1658,6 +1660,7 @@ async function handleFileUpload() {
     alert('JSON 解析失败：' + e.message);
   }
 }
+
 
 
 
