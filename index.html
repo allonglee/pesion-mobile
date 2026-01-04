@@ -56,6 +56,10 @@
         <div id="content" style="display:none;">
             <!-- 控制面板区域，包含各种筛选和分析选项 -->
             <div class="control-panel">
+				<div class="control-group">
+					<label class="control-label">数据管理</label>
+					<button class="btn-small" onclick="reuploadData()">重新上传数据</button>
+				</div>
                 <!-- 期初时间选择控件组 -->
                 <div class="control-group">
                     <label class="control-label">期初时间</label> <!-- 标签文本 -->
@@ -163,10 +167,7 @@
             
             <!-- 导出功能按钮区域 -->
 	   <!-- ⑥ 重新上传按钮 -->
-	   <div class="control-group" style="margin: 0 24px 12px;">
- 		 <label class="control-label">数据管理</label>
-  		<button class="btn-small" onclick="reuploadData()">重新上传数据</button>
-	    </div>
+	   
 
             <div class="export-panel">
                 <button class="export-btn export-chart" onclick="exportChart()">导出图表</button> <!-- 导出图表按钮 -->
@@ -212,6 +213,7 @@
     </script>
 </body>
 </html>
+
 
 
 
