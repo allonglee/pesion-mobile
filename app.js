@@ -891,7 +891,7 @@ function updateMainChart(data, filteredDates, dataType, category, compareMode) {
                             }
                         }
                     }
-                },s
+                },
                 scales: {
                     y: {
                         beginAtZero: true, // 从0开始
@@ -1660,6 +1660,7 @@ async function handleFileUpload() {
     alert('JSON 解析失败：' + e.message);
   }
 }
+
 
 
 
